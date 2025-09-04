@@ -1,5 +1,11 @@
 Bienvenido a `README.md`
 
+Nota:
+Como se usó Render gratuito , el point probablemnete no esté operativo luego de su despliegue.
+Se usó FastAPI como API, Agno como Framework para crear sistems de IA, ChromaDB como base de datos vectoriales, sqlite3 para almacenar las conversaciones o base de datos, Render para el despliegue y github para integración continua, y Pytest para pruebas unitarias y de intergración. Se obtó por tecnologías gratuitas para este prototipo de API RAG.
+
+Se pudo obtar usar Docling (https://github.com/docling-project/docling) que paresea archivos PDFs, Txt, Docs, Docx y más para transformar a Markdown (De URls a Markdown o Archivos Binarios a Markdown) que luego se pueden almancenr el bases de datos vectoriales y es más entendible para los LLMs ese formato Markdown, pero pesa mucho, por lo que se optó por usar las opciones nativas de Agno que es un framework opensource hecho para crear soluciones poco complejas con IA generativa como sistemas multiagentes simples o asistentes de IA simples. Se pudo obtar por CrewAI que es similar, pero es más usado para soluciones más complejas y requiere mayor comprensión de ciertos temas; se pudo obtar por LangChain y Langraph, pero no Langchain no está hecho para escalar y es inestable. En este caso se obtó por algo que pueda escalar mejor y más simple con versiones estables para escalar.
+
 ---
 
 # RAG API - Desafío Musache
@@ -116,107 +122,212 @@ pytest tests/test_api_endpoints.py
 
 ### Link : `http://127.0.0.1:8001/api/v1`
 
-### `POST /api/v1/rag-query`
+Entiendo que quieres que añada la sección de "response" o respuestas a las pruebas curl que mencioné anteriormente.
 
-Realiza una consulta basada en documentos cargados.
+Aquí está el contenido actualizado con ejemplos de respuestas:
 
-- **Form Data:**
-  - `question` (string, requerido): La pregunta a responder.
-  - `files` (array of UploadFile, opcional): Archivos PDF, TXT o DOCX para procesar.
-  - `urls` (array of strings, opcional): URLs de documentos PDF, TXT o DOCX para descargar y procesar.
-- **Respuesta:**
-  ```json
-  {
-  	"answer": "Respuesta generada por el modelo.",
-  	"sender": "assistant",
-  	"conversation_id": "uuid-único-para-esta-interacción"
-  }
-  ```
+# 🧪 Ejemplos de Uso del API - Desafío Musache
+
+## 📡 Ejemplos con cURL
 
 ### Para archivos locales:
 
 ```bash
 curl -X POST "http://127.0.0.1:8001/api/v1/rag-query" \
+     -H "Content-Type: multipart/form-data" \
      -F "question=¿Cuál es el objetivo del desafío?" \
      -F "files=@/ruta/a/tu/documento.pdf"
+```
+
+**Ejemplo de respuesta:**
+
+```json
+{
+	"answer": "El objetivo del desafío Musache es construir un sistema de respuesta a preguntas basado en un documento utilizando la técnica Retrieval-Augmented Generation (RAG).",
+	"sender": "assistant",
+	"conversation_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+}
 ```
 
 ### Para URLs:
 
 ```bash
 curl -X POST "http://127.0.0.1:8001/api/v1/rag-query" \
-     -F "question="How to make Thai curry?" \
+     -H "Content-Type: multipart/form-data" \
+     -F "question=How to make Thai curry?" \
      -F "urls=https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf"
+```
+
+**Ejemplo de respuesta:**
+
+```json
+{
+	"answer": "To make Thai curry, you need to prepare the curry paste first by grinding lemongrass, galangal, and chilies. Then cook with coconut milk and add your choice of protein and vegetables.",
+	"sender": "assistant",
+	"conversation_id": "f0e9d8c7-b6a5-4321-fedc-ba9876543210"
+}
 ```
 
 ### Para múltiples URLs:
 
 ```bash
 curl -X POST "http://127.0.0.1:8001/api/v1/rag-query" \
-     -F "question=¿Cuál es el objetivo del desafío?" \
-     -F "urls=https://example.com/documento1.pdf" \
-     -F "urls=https://example.com/documento2.txt"
+     -H "Content-Type: multipart/form-data" \
+     -F "question=¿Qué información contienen estos documentos?" \
+     -F "urls=https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf" \
+     -F "urls=https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf"
 ```
 
-### `GET /api/v1/conversation/{conversation_id}`
+**Ejemplo de respuesta:**
 
-Obtiene el historial de mensajes de una conversación específica.
+```json
+{
+	"answer": "Los documentos contienen información sobre diferentes aspectos del proyecto. El primer documento describe la arquitectura del sistema, mientras que el segundo presenta los requisitos técnicos y funcionales.",
+	"sender": "assistant",
+	"conversation_id": "c8b7a6d5-e4f3-2109-8765-432109876543"
+}
+```
 
-- **Respuesta:**
-  ```json
-  [
-  	{
-  		"id": 1,
-  		"conversation_id": "uuid-único-para-esta-interacción",
-  		"sender": "user",
-  		"message": "¿Cuál es el objetivo del desafío?",
-  		"timestamp": "2023-10-27T10:00:00.123456"
-  	},
-  	{
-  		"id": 2,
-  		"conversation_id": "uuid-único-para-esta-interacción",
-  		"sender": "assistant",
-  		"message": "El objetivo del desafío Musache es construir un sistema de respuesta a preguntas...",
-  		"timestamp": "2023-10-27T10:00:02.654321"
-  	}
-  ]
-  ```
+### Para solo hacer una pregunta (sin cargar documentos):
 
-### `GET /api/v1/conversations`
+```bash
+curl -X POST "http://127.0.0.1:8001/api/v1/rag-query" \
+     -H "Content-Type: application/x-www-form-urlencoded" \
+     -d "question=¿Cuál es el objetivo del desafío Musache?"
+```
 
-Lista todos los IDs de conversación almacenados.
+**Ejemplo de respuesta:**
 
-- **Respuesta:**
-  ```json
-  {
-  	"conversation_ids": ["uuid-único-1", "uuid-único-2"]
-  }
-  ```
+```json
+{
+	"answer": "El objetivo del desafío Musache es construir un sistema de respuesta a preguntas basado en un documento utilizando la técnica Retrieval-Augmented Generation (RAG), y exponerlo como un API web utilizando Python.",
+	"sender": "assistant",
+	"conversation_id": "d7e6f5c4-b3a2-1098-7654-321098765432"
+}
+```
 
-### `GET /api/v1/health`
+### Obtener una conversación específica:
 
-Verifica el estado de salud del servicio.
+```bash
+curl -X GET "http://127.0.0.1:8001/api/v1/conversation/a1b2c3d4-e5f6-7890-1234-567890abcdef"
+```
 
-- **Respuesta:**
-  ```json
-  {
-  	"status": "healthy",
-  	"collection": "documentos",
-  	"database": "connected"
-  }
-  ```
+**Ejemplo de respuesta:**
 
-### `GET /`
+```json
+[
+	{
+		"id": 1,
+		"conversation_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+		"sender": "user",
+		"message": "¿Cuál es el objetivo del desafío?",
+		"timestamp": "2025-09-04T10:30:45.123456"
+	},
+	{
+		"id": 2,
+		"conversation_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+		"sender": "assistant",
+		"message": "El objetivo del desafío Musache es construir un sistema de respuesta a preguntas basado en un documento utilizando la técnica Retrieval-Augmented Generation (RAG).",
+		"timestamp": "2025-09-04T10:30:47.654321"
+	}
+]
+```
 
-Endpoint raíz con información básica.
+### Obtener todas las conversaciones:
 
-- **Respuesta:**
-  ```json
-  {
-  	"message": "RAG API - Desafío Musache",
-  	"docs": "/docs"
-  }
-  ```
+```bash
+curl -X GET "http://127.0.0.1:8001/api/v1/conversations"
+```
+
+**Ejemplo de respuesta:**
+
+```json
+{
+	"conversation_ids": [
+		"a1b2c3d4-e5f6-7890-1234-567890abcdef",
+		"f0e9d8c7-b6a5-4321-fedc-ba9876543210",
+		"c8b7a6d5-e4f3-2109-8765-432109876543"
+	]
+}
+```
+
+### Verificar el estado del servicio:
+
+```bash
+curl -X GET "http://127.0.0.1:8001/api/v1/health"
+```
+
+**Ejemplo de respuesta:**
+
+```json
+{
+	"status": "healthy",
+	"collection": "documentos",
+	"database": "connected"
+}
+```
+
+## 🖥️ Ejemplos con Postman
+
+### 1. Configuración para cargar archivos locales
+
+**Método:** `POST`  
+**URL:** `http://127.0.0.1:8001/api/v1/rag-query`  
+**Pestaña Body:**
+
+- Seleccionar `form-data`
+- Agregar campos:
+  - Key: `question`, Value: `¿Cuál es el objetivo del desafío?`, Type: `Text`
+  - Key: `files`, Value: `[Seleccionar archivo]`, Type: `File`
+
+### 2. Configuración para URLs
+
+**Método:** `POST`  
+**URL:** `http://127.0.0.1:8001/api/v1/rag-query`  
+**Pestaña Body:**
+
+- Seleccionar `form-data`
+- Agregar campos:
+  - Key: `question`, Value: `How to make Thai curry?`, Type: `Text`
+  - Key: `urls`, Value: `https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf`, Type: `Text`
+
+### 3. Configuración para múltiples URLs
+
+**Método:** `POST`  
+**URL:** `http://127.0.0.1:8001/api/v1/rag-query`  
+**Pestaña Body:**
+
+- Seleccionar `form-data`
+- Agregar campos:
+  - Key: `question`, Value: `¿Qué información contienen estos documentos?`, Type: `Text`
+  - Key: `urls`, Value: `https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf`, Type: `Text`
+  - Key: `urls`, Value: `https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf`, Type: `Text`
+  - _(Haz clic en "Add" para agregar múltiples campos con la misma key `urls`)_
+
+### 4. Obtener conversaciones
+
+**Método:** `GET`  
+**URL:** `http://127.0.0.1:8001/api/v1/conversations`
+
+**Método:** `GET`  
+**URL:** `http://127.0.0.1:8001/api/v1/conversation/a1b2c3d4-e5f6-7890-1234-567890abcdef`
+
+## 🎯 Notas importantes:
+
+1. **Content-Type:** Para solicitudes con archivos o URLs, Postman configurará automáticamente el `Content-Type: multipart/form-data`
+2. **Espacios:** Asegúrate de no dejar espacios al final de las URLs
+3. **Archivos:** Al cargar archivos locales, asegúrate de que la ruta sea correcta y el archivo exista
+4. **Respuestas:** Todas las respuestas incluyen un `conversation_id` que puedes usar para consultar el historial de la conversación
+
+## 📋 Ejemplo de respuesta completo:
+
+```json
+{
+	"answer": "El objetivo del desafío Musache es construir un sistema de respuesta a preguntas basado en un documento utilizando la técnica Retrieval-Augmented Generation (RAG), y exponerlo como un API web utilizando Python.",
+	"sender": "assistant",
+	"conversation_id": "694e9653-ffbc-4b29-86dc-1a2094d097a2"
+}
+```
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -246,13 +357,11 @@ Este proyecto está listo para ser desplegado en plataformas como Render.
 1.  Crea una cuenta en [Render](https://render.com).
 2.  Conecta tu repositorio de GitHub.
 3.  Configura el servicio web:
-    - **Environment**: Python
+    - **Environment**: Python 3
     - **Build Command**: `pip install -r requirements.txt`
     - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 4.  Agrega la variable de entorno `OPENAI_API_KEY` en la sección de "Environment Variables" de Render.
 5.  Render desplegará automáticamente la aplicación.
-
-_(Nota: Asegúrate de tener un archivo `render.yaml` o configurar correctamente los comandos de construcción e inicio en la interfaz de Render)._
 
 ## ✅ Criterios del Desafío
 
@@ -279,7 +388,7 @@ tests/
 └── test_api_endpoints.py      # Pruebas de integración de la API
 ```
 
-## 🧪 Ejecutar las Pruebas
+# 🧪 Ejecutar las Pruebas
 
 ### Requisitos Previos
 
@@ -383,3 +492,221 @@ test/test_rag_logic.py::test_query_rag PASSED                            [100%]
 - ✅ **Manejo de errores**: Se prueban casos de error y respuestas esperadas
 
 Las pruebas garantizan que el sistema cumple con los requisitos del Desafío Musache y mantiene una alta calidad de código.
+
+# Render:
+
+### Pasos Generales para Render:
+
+1.  Crea una cuenta en [Render](https://render.com).
+2.  Conecta tu repositorio de GitHub.
+3.  Configura el servicio web:
+    - **Environment**: Python 3
+    - **Build Command**: `pip install -r requirements.txt`
+    - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+4.  Agrega la variable de entorno `OPENAI_API_KEY` en la sección de "Environment Variables" de Render.
+5.  Render desplegará automáticamente la aplicación.
+
+## 🧪 Ejemplos de Uso del API - Desafío Musache
+
+Link: https://api-fastpi-rag-agno-test.onrender.com
+
+## 📡 Ejemplos con cURL
+
+### Para archivos locales:
+
+```bash
+curl -X POST "https://api-fastpi-rag-agno-test.onrender.com/api/v1/rag-query" \
+     -H "Content-Type: multipart/form-data" \
+     -F "question=¿Cuál es el objetivo del desafío?" \
+     -F "files=@/ruta/a/tu/documento.pdf"
+```
+
+**Ejemplo de respuesta:**
+
+```json
+{
+	"answer": "El objetivo del desafío Musache es construir un sistema de respuesta a preguntas basado en un documento utilizando la técnica Retrieval-Augmented Generation (RAG).",
+	"sender": "assistant",
+	"conversation_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+}
+```
+
+### Para URLs:
+
+```bash
+curl -X POST "https://api-fastpi-rag-agno-test.onrender.com/api/v1/rag-query" \
+     -H "Content-Type: multipart/form-data" \
+     -F "question=How to make Thai curry?" \
+     -F "urls=https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf"
+```
+
+**Ejemplo de respuesta:**
+
+```json
+{
+	"answer": "To make Thai curry, you need to prepare the curry paste first by grinding lemongrass, galangal, and chilies. Then cook with coconut milk and add your choice of protein and vegetables.",
+	"sender": "assistant",
+	"conversation_id": "f0e9d8c7-b6a5-4321-fedc-ba9876543210"
+}
+```
+
+### Para múltiples URLs:
+
+```bash
+curl -X POST "https://api-fastpi-rag-agno-test.onrender.com/api/v1/rag-query" \
+     -H "Content-Type: multipart/form-data" \
+     -F "question=¿Qué información contienen estos documentos?" \
+     -F "urls=https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf" \
+     -F "urls=https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf"
+```
+
+**Ejemplo de respuesta:**
+
+```json
+{
+	"answer": "Los documentos contienen información sobre diferentes aspectos del proyecto. El primer documento describe la arquitectura del sistema, mientras que el segundo presenta los requisitos técnicos y funcionales.",
+	"sender": "assistant",
+	"conversation_id": "c8b7a6d5-e4f3-2109-8765-432109876543"
+}
+```
+
+### Para solo hacer una pregunta (sin cargar documentos):
+
+```bash
+curl -X POST "https://api-fastpi-rag-agno-test.onrender.com/api/v1/rag-query" \
+     -H "Content-Type: application/x-www-form-urlencoded" \
+     -d "question=¿Cuál es el objetivo del desafío Musache?"
+```
+
+**Ejemplo de respuesta:**
+
+```json
+{
+	"answer": "El objetivo del desafío Musache es construir un sistema de respuesta a preguntas basado en un documento utilizando la técnica Retrieval-Augmented Generation (RAG), y exponerlo como un API web utilizando Python.",
+	"sender": "assistant",
+	"conversation_id": "d7e6f5c4-b3a2-1098-7654-321098765432"
+}
+```
+
+### Obtener una conversación específica:
+
+```bash
+curl -X GET "https://api-fastpi-rag-agno-test.onrender.com/api/v1/conversation/a1b2c3d4-e5f6-7890-1234-567890abcdef"
+```
+
+**Ejemplo de respuesta:**
+
+```json
+[
+	{
+		"id": 1,
+		"conversation_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+		"sender": "user",
+		"message": "¿Cuál es el objetivo del desafío?",
+		"timestamp": "2025-09-04T10:30:45.123456"
+	},
+	{
+		"id": 2,
+		"conversation_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+		"sender": "assistant",
+		"message": "El objetivo del desafío Musache es construir un sistema de respuesta a preguntas basado en un documento utilizando la técnica Retrieval-Augmented Generation (RAG).",
+		"timestamp": "2025-09-04T10:30:47.654321"
+	}
+]
+```
+
+### Obtener todas las conversaciones:
+
+```bash
+curl -X GET "https://api-fastpi-rag-agno-test.onrender.com/api/v1/conversations"
+```
+
+**Ejemplo de respuesta:**
+
+```json
+{
+	"conversation_ids": [
+		"a1b2c3d4-e5f6-7890-1234-567890abcdef",
+		"f0e9d8c7-b6a5-4321-fedc-ba9876543210",
+		"c8b7a6d5-e4f3-2109-8765-432109876543"
+	]
+}
+```
+
+### Verificar el estado del servicio:
+
+```bash
+curl -X GET "hhttps://api-fastpi-rag-agno-test.onrender.com/api/v1/health"
+```
+
+**Ejemplo de respuesta:**
+
+```json
+{
+	"status": "healthy",
+	"collection": "documentos",
+	"database": "connected"
+}
+```
+
+## 🖥️ Ejemplos con Postman
+
+### 1. Configuración para cargar archivos locales
+
+**Método:** `POST`  
+**URL:** `https://api-fastpi-rag-agno-test.onrender.com/api/v1/rag-query`  
+**Pestaña Body:**
+
+- Seleccionar `form-data`
+- Agregar campos:
+  - Key: `question`, Value: `¿Cuál es el objetivo del desafío?`, Type: `Text`
+  - Key: `files`, Value: `[Seleccionar archivo]`, Type: `File`
+
+### 2. Configuración para URLs
+
+**Método:** `POST`  
+**URL:** `https://api-fastpi-rag-agno-test.onrender.com/api/v1/rag-query`  
+**Pestaña Body:**
+
+- Seleccionar `form-data`
+- Agregar campos:
+  - Key: `question`, Value: `How to make Thai curry?`, Type: `Text`
+  - Key: `urls`, Value: `https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf`, Type: `Text`
+
+### 3. Configuración para múltiples URLs
+
+**Método:** `POST`  
+**URL:** `https://api-fastpi-rag-agno-test.onrender.com/api/v1/rag-query`  
+**Pestaña Body:**
+
+- Seleccionar `form-data`
+- Agregar campos:
+  - Key: `question`, Value: `¿Qué información contienen estos documentos?`, Type: `Text`
+  - Key: `urls`, Value: `https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf`, Type: `Text`
+  - Key: `urls`, Value: `https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf`, Type: `Text`
+  - _(Haz clic en "Add" para agregar múltiples campos con la misma key `urls`)_
+
+### 4. Obtener conversaciones
+
+**Método:** `GET`  
+**URL:** `https://api-fastpi-rag-agno-test.onrender.com/api/v1/conversations`
+
+**Método:** `GET`  
+**URL:** `https://api-fastpi-rag-agno-test.onrender.com/api/v1/conversation/a1b2c3d4-e5f6-7890-1234-567890abcdef`
+
+## 🎯 Notas importantes:
+
+1. **Content-Type:** Para solicitudes con archivos o URLs, Postman configurará automáticamente el `Content-Type: multipart/form-data`
+2. **Espacios:** Asegúrate de no dejar espacios al final de las URLs
+3. **Archivos:** Al cargar archivos locales, asegúrate de que la ruta sea correcta y el archivo exista
+4. **Respuestas:** Todas las respuestas incluyen un `conversation_id` que puedes usar para consultar el historial de la conversación
+
+## 📋 Ejemplo de respuesta completo:
+
+```json
+{
+	"answer": "El objetivo del desafío Musache es construir un sistema de respuesta a preguntas basado en un documento utilizando la técnica Retrieval-Augmented Generation (RAG), y exponerlo como un API web utilizando Python.",
+	"sender": "assistant",
+	"conversation_id": "694e9653-ffbc-4b29-86dc-1a2094d097a2"
+}
+```
