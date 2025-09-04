@@ -23,3 +23,8 @@ pytest
 python-docx
 
 sqlmodel
+
+# === DEPENDENCIAS PARA PRUEBAS ===
+pytest
+pytest-asyncio
+httpx

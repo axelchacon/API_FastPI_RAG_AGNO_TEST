@@ -114,6 +114,8 @@ pytest tests/test_api_endpoints.py
 
 ## 📦 Endpoints de la API
 
+### Link : `http://127.0.0.1:8001/api/v1`
+
 ### `POST /api/v1/rag-query`
 
 Realiza una consulta basada en documentos cargados.
@@ -134,7 +136,7 @@ Realiza una consulta basada en documentos cargados.
 ### Para archivos locales:
 
 ```bash
-curl -X POST "http://localhost:8001/api/v1/rag-query" \
+curl -X POST "http://127.0.0.1:8001/api/v1/rag-query" \
      -F "question=¿Cuál es el objetivo del desafío?" \
      -F "files=@/ruta/a/tu/documento.pdf"
 ```
@@ -142,7 +144,7 @@ curl -X POST "http://localhost:8001/api/v1/rag-query" \
 ### Para URLs:
 
 ```bash
-curl -X POST "http://localhost:8001/api/v1/rag-query" \
+curl -X POST "http://127.0.0.1:8001/api/v1/rag-query" \
      -F "question="How to make Thai curry?" \
      -F "urls=https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf"
 ```
@@ -150,7 +152,7 @@ curl -X POST "http://localhost:8001/api/v1/rag-query" \
 ### Para múltiples URLs:
 
 ```bash
-curl -X POST "http://localhost:8001/api/v1/rag-query" \
+curl -X POST "http://127.0.0.1:8001/api/v1/rag-query" \
      -F "question=¿Cuál es el objetivo del desafío?" \
      -F "urls=https://example.com/documento1.pdf" \
      -F "urls=https://example.com/documento2.txt"
