@@ -262,3 +262,124 @@ _(Nota: Asegúrate de tener un archivo `render.yaml` o configurar correctamente 
 - **Solidez en decisiones técnicas**: Elección de tecnologías modernas y adecuadas, arquitectura modular, manejo de errores.
 
 ---
+
+# 🧪 Pruebas del Proyecto - Desafío Musache
+
+Este proyecto incluye un conjunto completo de pruebas unitarias e integración para garantizar la calidad y el correcto funcionamiento del sistema RAG.
+
+## 📁 Estructura de las Pruebas
+
+```
+tests/
+├── __init__.py
+├── conftest.py                # Puedes añadir fixtures globales aquí si los necesitas
+├── test_rag_logic.py          # Pruebas unitarias de la lógica RAG
+├── test_document_processing.py # Pruebas unitarias del procesamiento de documentos
+├── test_database.py           # Pruebas unitarias de la base de datos SQLite
+└── test_api_endpoints.py      # Pruebas de integración de la API
+```
+
+## 🧪 Ejecutar las Pruebas
+
+### Requisitos Previos
+
+Asegúrate de tener instaladas las dependencias de prueba:
+
+```bash
+pip install pytest pytest-asyncio httpx
+```
+
+### Comandos de Ejecución
+
+```bash
+# Ejecutar todas las pruebas
+pytest
+
+# Ejecutar todas las pruebas con salida detallada
+pytest -v
+
+# Ejecutar un archivo de prueba específico
+pytest tests/test_api_endpoints.py
+
+# Ejecutar pruebas con cobertura (requiere pytest-cov)
+pytest --cov=app tests/
+```
+
+## 📊 Resultado de las Pruebas
+
+Todas las pruebas pasan exitosamente:
+
+```
+=============================================================== test session starts ===============================================================
+collected 18 items
+
+test/test_api_endpoints.py::test_health_check PASSED                     [  5%]
+test/test_api_endpoints.py::test_root_endpoint PASSED                    [ 11%]
+test/test_api_endpoints.py::test_list_conversations_empty PASSED         [ 16%]
+test/test_api_endpoints.py::test_get_nonexistent_conversation PASSED     [ 22%]
+test/test_api_endpoints.py::test_rag_query_no_files PASSED               [ 27%]
+test/test_api_endpoints.py::test_rag_query_with_files PASSED             [ 33%]
+test/test_database.py::test_init_db PASSED                               [ 38%]
+test/test_database.py::test_save_and_get_message PASSED                  [ 44%]
+test/test_database.py::test_get_all_conversation_ids PASSED              [ 50%]
+test/test_document_processing.py::test_get_file_extension PASSED         [ 55%]
+test/test_document_processing.py::test_process_single_file_pdf PASSED    [ 61%]
+test/test_document_processing.py::test_process_url_pdf PASSED            [ 66%]
+test/test_document_processing.py::test_process_uploaded_files PASSED     [ 72%]
+test/test_rag_logic.py::test_get_knowledge_base PASSED                   [ 77%]
+test/test_rag_logic.py::test_ensure_chromadb_collections PASSED          [ 83%]
+test/test_rag_logic.py::test_create_knowledge_bases PASSED               [ 88%]
+test/test_rag_logic.py::test_create_rag_agent PASSED                     [ 94%]
+test/test_rag_logic.py::test_query_rag PASSED                            [100%]
+
+=============================================================== 18 passed in 9.28s ================================================================
+```
+
+## 🎯 Cobertura de las Pruebas
+
+### 1. Pruebas de Lógica RAG (`test_rag_logic.py`)
+
+- ✅ `test_get_knowledge_base`: Verifica la obtención de la base de conocimiento
+- ✅ `test_ensure_chromadb_collections`: Prueba la creación de colecciones ChromaDB
+- ✅ `test_create_knowledge_bases`: Verifica la creación de bases de conocimiento combinadas
+- ✅ `test_create_rag_agent`: Prueba la creación del agente RAG
+- ✅ `test_query_rag`: Verifica la función de consulta al sistema RAG
+
+### 2. Pruebas de Base de Datos (`test_database.py`)
+
+- ✅ `test_init_db`: Prueba la inicialización de la base de datos SQLite
+- ✅ `test_save_and_get_message`: Verifica el guardado y recuperación de mensajes
+- ✅ `test_get_all_conversation_ids`: Prueba la obtención de IDs de conversación
+
+### 3. Pruebas de Procesamiento de Documentos (`test_document_processing.py`)
+
+- ✅ `test_get_file_extension`: Verifica la función de obtención de extensiones
+- ✅ `test_process_single_file_pdf`: Prueba el procesamiento de archivos PDF locales
+- ✅ `test_process_url_pdf`: Verifica el procesamiento de URLs PDF
+- ✅ `test_process_uploaded_files`: Prueba el procesamiento de archivos subidos
+
+### 4. Pruebas de API (`test_api_endpoints.py`)
+
+- ✅ `test_health_check`: Verifica el endpoint de salud
+- ✅ `test_root_endpoint`: Prueba el endpoint raíz
+- ✅ `test_list_conversations_empty`: Verifica listado de conversaciones vacías
+- ✅ `test_get_nonexistent_conversation`: Prueba manejo de conversaciones inexistentes
+- ✅ `test_rag_query_no_files`: Verifica consulta RAG sin archivos
+- ✅ `test_rag_query_with_files`: Prueba consulta RAG con URLs
+
+## 🛠️ Tecnologías de Pruebas
+
+- **pytest**: Framework principal de pruebas
+- **pytest-asyncio**: Soporte para pruebas asíncronas
+- **httpx**: Cliente HTTP para pruebas de API
+- **unittest.mock**: Para mocking de dependencias externas
+
+## 🎯 Criterios del Desafío Cumplidos
+
+- ✅ **Pruebas unitarias**: Cada componente del sistema es probado individualmente
+- ✅ **Pruebas de integración**: Verifican el funcionamiento conjunto de la API
+- ✅ **Cobertura completa**: Todas las funcionalidades críticas están cubiertas
+- ✅ **Uso de mocks**: Se evitan dependencias externas para pruebas aisladas
+- ✅ **Manejo de errores**: Se prueban casos de error y respuestas esperadas
+
+Las pruebas garantizan que el sistema cumple con los requisitos del Desafío Musache y mantiene una alta calidad de código.
