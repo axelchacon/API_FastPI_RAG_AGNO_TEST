@@ -1,7 +1,7 @@
 Bienvenido a `README.md`
 
 Nota:
-Como se usó Render gratuito , el point probablemnete no esté operativo luego de su despliegue.
+Como se usó Render gratuito , el endpoint probablemnete no esté operativo luego de su despliegue (Your free instance will spin down with inactivity, which can delay requests by 50 seconds or more.): https://api-fastpi-rag-agno-test.onrender.com/ .
 Se usó FastAPI como API, Agno como Framework para crear sistems de IA, ChromaDB como base de datos vectoriales, sqlite3 para almacenar las conversaciones o base de datos, Render para el despliegue y github para integración continua, y Pytest para pruebas unitarias y de intergración. Se obtó por tecnologías gratuitas para este prototipo de API RAG.
 
 Se pudo obtar usar Docling (https://github.com/docling-project/docling) que paresea archivos PDFs, Txt, Docs, Docx y más para transformar a Markdown (De URls a Markdown o Archivos Binarios a Markdown) que luego se pueden almancenr el bases de datos vectoriales y es más entendible para los LLMs ese formato Markdown, pero pesa mucho, por lo que se optó por usar las opciones nativas de Agno que es un framework opensource hecho para crear soluciones poco complejas con IA generativa como sistemas multiagentes simples o asistentes de IA simples. Se pudo obtar por CrewAI que es similar, pero es más usado para soluciones más complejas y requiere mayor comprensión de ciertos temas; se pudo obtar por LangChain y Langraph, pero no Langchain no está hecho para escalar y es inestable. En este caso se obtó por algo que pueda escalar mejor y más simple con versiones estables para escalar.
