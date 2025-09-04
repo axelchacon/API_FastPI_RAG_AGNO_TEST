@@ -4,11 +4,9 @@ from pydantic import BaseModel
 from typing import List, Optional
 import os
 from dotenv import load_dotenv
+from io import BytesIO
 import tempfile
 import requests
-import sqlite3
-import uuid
-from datetime import datetime
 from agno.agent import Agent
 from agno.knowledge.combined import CombinedKnowledgeBase
 from agno.knowledge.pdf import PDFKnowledgeBase
@@ -21,87 +19,12 @@ from pypdf import PdfReader
 load_dotenv()
 
 
-# --- Configuración de la Base de Datos SQLite ---
-def init_db():
-    """Inicializa la base de datos y crea la tabla de conversaciones si no existe."""
-    conn = sqlite3.connect("conversations.db")
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS conversations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            conversation_id TEXT NOT NULL,
-            sender TEXT NOT NULL,
-            message TEXT NOT NULL,
-            timestamp TEXT
-        )
-    """
-    )
-    conn.commit()
-    conn.close()
-    print("✅ Base de datos SQLite inicializada")
-
-
-def save_message(conversation_id: str, sender: str, message: str):
-    """Guarda un mensaje en la base de datos."""
-    conn = sqlite3.connect("conversations.db")
-    cursor = conn.cursor()
-    timestamp = datetime.now().isoformat()
-    cursor.execute(
-        """
-        INSERT INTO conversations (conversation_id, sender, message, timestamp)
-        VALUES (?, ?, ?, ?)
-    """,
-        (conversation_id, sender, message, timestamp),
-    )
-    conn.commit()
-    conn.close()
-
-
-def get_conversation(conversation_id: str):
-    """Obtiene todos los mensajes de una conversación específica."""
-    conn = sqlite3.connect("conversations.db")
-    conn.row_factory = sqlite3.Row  # Para acceder a columnas por nombre
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-        SELECT id, conversation_id, sender, message, timestamp 
-        FROM conversations 
-        WHERE conversation_id = ? 
-        ORDER BY id
-    """,
-        (conversation_id,),
-    )
-    rows = cursor.fetchall()
-    conn.close()
-    return [dict(row) for row in rows]
-
-
-def get_all_conversation_ids():
-    """Obtiene todos los IDs de conversación únicos."""
-    conn = sqlite3.connect("conversations.db")
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-        SELECT DISTINCT conversation_id FROM conversations
-    """
-    )
-    rows = cursor.fetchall()
-    conn.close()
-    return [row[0] for row in rows]
-
-
-# Inicializar la base de datos al inicio
-init_db()
-# ------------------------------------------------
-
-
 def ensure_chromadb_collections():
     """Asegura que las colecciones de ChromaDB estén creadas."""
     os.makedirs("tmp/chromadb", exist_ok=True)
 
     # Crear todas las colecciones requeridas si no existen
-    collections = ["documentos"]
+    collections = ["documentos", "pdfs", "textos", "docs"]
     for collection in collections:
         db = ChromaDb(
             collection=collection, path="tmp/chromadb", persistent_client=True
@@ -114,9 +37,7 @@ def ensure_chromadb_collections():
     print("✅ Todas las colecciones han sido inicializadas.")
 
 
-# --- Inicializar DB y ChromaDB al inicio ---
 ensure_chromadb_collections()
-# --------------------------------------------
 
 app = FastAPI(title="RAG API - Desafío Musache")
 
@@ -127,8 +48,6 @@ def create_knowledge_bases():
         collection="documentos", path="tmp/chromadb", persistent_client=True
     )
 
-    # Nota: Los archivos dummy pueden no existir. Considera manejar esto o crearlos vacíos si es necesario.
-    # Para este ejemplo, asumimos que se cargan documentos dinámicamente.
     pdf_kb = PDFKnowledgeBase(path="tmp/dummy.pdf", vector_db=shared_vector_db)
     txt_kb = TextKnowledgeBase(path="tmp/dummy.txt", vector_db=shared_vector_db)
     doc_kb = DocxKnowledgeBase(path="tmp/dummy.docx", vector_db=shared_vector_db)
@@ -150,25 +69,11 @@ def create_rag_agent():
     )
 
 
-# --- Modelo para el request body ---
 class QueryRequest(BaseModel):
     question: str
 
 
-# -----------------------------------
-
-
-# --- Modelo para la respuesta ---
-class QueryResponse(BaseModel):
-    answer: str
-    sender: str
-    conversation_id: str  # Incluir el ID en la respuesta para referencia
-
-
-# --------------------------------
-
-
-@app.post("/rag-query", response_model=QueryResponse)
+@app.post("/rag-query")
 async def rag_query(
     question: str = Form(...),
     files: List[UploadFile] = File([]),
@@ -195,23 +100,8 @@ async def rag_query(
                     status_code=400, detail=f"Error al descargar {url}: {str(e)}"
                 )
 
-    # Generar un ID de conversación único para esta interacción
-    # En una app real, este ID vendría del cliente o se gestionaría por sesión.
-    conversation_id = str(uuid.uuid4())
-
-    # Guardar la pregunta del usuario
-    save_message(conversation_id, "user", question)
-
-    # Obtener la respuesta del agente
     response = agent.run(question)
-    answer_text = response.content
-
-    # Guardar la respuesta del asistente
-    save_message(conversation_id, "assistant", answer_text)
-
-    return QueryResponse(
-        answer=answer_text, sender="assistant", conversation_id=conversation_id
-    )
+    return {"answer": response.content, "sender": "assistant"}
 
 
 async def process_uploaded_file(filename: str, file_bytes: bytes, knowledge_base):
@@ -248,28 +138,6 @@ def get_file_extension(filename: str) -> str:
     return ""
 
 
-# --- Endpoint para obtener el historial de una conversación ---
-@app.get("/conversation/{conversation_id}")
-def get_conversation_endpoint(conversation_id: str):
-    messages = get_conversation(conversation_id)
-    if not messages:
-        raise HTTPException(status_code=404, detail="Conversación no encontrada")
-    return messages
-
-
-# ----------------------------------------------------------------
-
-
-# --- Endpoint para obtener todas las conversaciones (IDs únicos) ---
-@app.get("/conversations")
-def list_conversations_endpoint():
-    conversation_ids = get_all_conversation_ids()
-    return {"conversation_ids": conversation_ids}
-
-
-# --------------------------------------------------------------------
-
-
 @app.get("/")
 async def root():
     return {"message": "RAG API - Desafío Musache", "available_agents": ["rag_agent"]}
@@ -277,7 +145,7 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "collection": "documentos", "database": "connected"}
+    return {"status": "healthy", "collection": "documentos"}
 
 
 if __name__ == "__main__":
