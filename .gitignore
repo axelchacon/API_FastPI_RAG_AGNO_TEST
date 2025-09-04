@@ -1,0 +1,40 @@
+# Archivos generados por SAM
+.aws-sam/
+dist/
+retomusa
+tmp
+# Entornos virtuales
+.venv/
+__pycache__/
+__pycache__
+
+# Variables de entorno reales
+.env
+env.json
+# Instaladores locales
+aws-sam-cli-linux-x86_64.zip
+aws-sam-cli-linux-x86_64.zip.1
+
+# Otros archivos temporales
+*.pyc
+*.log
+*.tmp
+
+# Archivos específicos
+THIRD-PARTY-LICENSES
+
+# Carpera por SAM
+implementAgno/
+lambda-function-main.zip
+nombre_de_tu_carpeta.zip
+Readmeejemplobase.md
+layers
+lambdaoficialfastapiagno
+# Carpetas por el entonrno virtual
+sam-installation/
+sam-installation
+python/
+python
+
+template.yaml
+packaged.yaml
